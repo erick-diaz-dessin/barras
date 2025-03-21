@@ -39,7 +39,8 @@ function calculate() {
 
     // Caso especial: barras es par y múltiplos de 1/32 es impar
     if (barras % 2 === 0 && parity === "impar") {
-        enMedio = closest + (1 / 32); // Tomamos 1/32 para enMedio
+        // enMedio = closest + (1 / 32); // Tomamos 1/32 para enMedio
+        enMedio = distancia - finalValue < 0 ? closest - (1 / 32) : closest + (1 / 32);
         updatedMultiplesOf32 -= 1; // Restamos 1/32 de la diferencia total
     }
 
@@ -58,7 +59,46 @@ function calculate() {
     // General sigue siendo igual al más cercano
     let general = closest;
 
+    // Calcular la posición de la primera barra
+    let posiciones = [];
+    posiciones.push(primera + (espesor / 2));
+
+    // Determinar qué barra está en medio (si es par, tomamos la de mayor índice)
+    let barraEnMedioIndex = Math.ceil(barras / 2);
+    // let barraEnMedioTexto = `La barra en medio es la Barra ${barraEnMedioIndex}`;
+
+    // Calcular las posiciones de las siguientes barras
+    for (let i = 1; i < barras; i++) {
+        if (i === barraEnMedioIndex && enMedio !== 0) {
+            // Si es la barra en medio y enMedio es distinto de cero, usar enMedio en lugar de general
+            posiciones.push(posiciones[i - 1] + enMedio + espesor);
+        } else {
+            posiciones.push(posiciones[i - 1] + general + espesor);
+        }
+    }
+
+    // Calcular la posición final (última barra + mitad del espesor + última)
+    let finalPosition = posiciones[barras - 1] + (espesor / 2) + ultima;
+
+    // Crear la tabla de posiciones de barras
+    let barrasTable = `<table><tr><th>Barra</th><th>Posición</th></tr>`;
+    for (let i = 0; i < posiciones.length; i++) {
+        barrasTable += `<tr><td>Barra ${i + 1}</td><td>${posiciones[i].toFixed(5)}</td></tr>`;
+    }
+    // Agregar la fila final
+    barrasTable += `<tr><td>Final</td><td>${finalPosition.toFixed(5)}</td></tr>`;
+    barrasTable += `</table>`;
+
     document.getElementById("result").innerHTML = `
+
+    ${barrasTable}
+
+    <table>
+        <tr><td>Primera</td><td>${primera.toFixed(5)}</td></tr>
+        <tr><td>En medio</td><td>${enMedio.toFixed(5)}</td></tr>
+        <tr><td>Última</td><td>${ultima.toFixed(5)}</td></tr>
+        <tr><td>General</td><td>${general.toFixed(5)}</td></tr>
+    </table>
 
     <table>
         <tr><td>Resultado exacto</td><td>${rawResult.toFixed(5)}</td></tr>
@@ -71,11 +111,5 @@ function calculate() {
         <tr><td>Paridad</td><td>${parity}</td></tr>
     </table>
 
-    <table>
-        <tr><td>Primera</td><td>${primera.toFixed(5)}</td></tr>
-        <tr><td>En medio</td><td>${enMedio.toFixed(5)}</td></tr>
-        <tr><td>Última</td><td>${ultima.toFixed(5)}</td></tr>
-        <tr><td>General</td><td>${general.toFixed(5)}</td></tr>
-    </table>
 `;
 }
