@@ -29,38 +29,33 @@ function calculate() {
     let difference = finalValue - distancia;
     let formattedDifference = difference > 0 ? `-${Math.abs(difference).toFixed(5)}` : `${Math.abs(difference).toFixed(5)}`;
 
-    // Calcular el número de múltiplos de 1/32
-    let multiplesOf32 = Math.round(Math.abs(difference) * 32);
-    let parity = multiplesOf32 % 2 === 0 ? "par" : "impar";
+    // Calcular el número original de múltiplos de 1/32 (antes de modificarlo)
+    let originalMultiplesOf32 = Math.round(Math.abs(difference) * 32);
+    let parity = originalMultiplesOf32 % 2 === 0 ? "par" : "impar";
 
-    // Calcular Primera y Última
-    let adjustment = multiplesOf32 / 2 / 32; // Mitad de la diferencia en múltiplos de 1/32
-
+    let enMedio = 0;
     let primera, ultima;
-    if (distancia - finalValue < 0) {
-        // Diferencia negativa: restar
-        if (parity === "impar") {
-            primera = closest - (Math.ceil(adjustment * 32) / 32);
-            ultima = closest - (Math.floor(adjustment * 32) / 32);
-        } else {
-            primera = closest - adjustment;
-            ultima = closest - adjustment;
-        }
-    } else {
-        // Diferencia positiva: sumar
-        if (parity === "impar") {
-            primera = closest + (Math.ceil(adjustment * 32) / 32);
-            ultima = closest + (Math.floor(adjustment * 32) / 32);
-        } else {
-            primera = closest + adjustment;
-            ultima = closest + adjustment;
-        }
+    let updatedMultiplesOf32 = originalMultiplesOf32; // Guardamos la cantidad original
+
+    // Caso especial: barras es par y múltiplos de 1/32 es impar
+    if (barras % 2 === 0 && parity === "impar") {
+        enMedio = closest + (1 / 32); // Tomamos 1/32 para enMedio
+        updatedMultiplesOf32 -= 1; // Restamos 1/32 de la diferencia total
     }
 
-    // "En medio" siempre es 0
-    let enMedio = 0;
+    let adjustment = (updatedMultiplesOf32 / 2) / 32; // Mitad de la diferencia restante
 
-    // "General" es igual al más cercano
+    if (distancia - finalValue < 0) {
+        // Diferencia negativa: restar
+        primera = closest - adjustment;
+        ultima = closest - adjustment;
+    } else {
+        // Diferencia positiva: sumar
+        primera = closest + adjustment;
+        ultima = closest + adjustment;
+    }
+
+    // General sigue siendo igual al más cercano
     let general = closest;
 
     document.getElementById("result").innerHTML = `
@@ -72,9 +67,8 @@ function calculate() {
         <tr><td>Más cercano</td><td>${closest.toFixed(5)}</td></tr>
         <tr><td>Resultado final con fórmula</td><td>${finalValue.toFixed(5)}</td></tr>
         <tr><td>Diferencia con distancia ingresada</td><td>${formattedDifference}</td></tr>
-        <tr><td>Número de múltiplos de 1/32</td><td>${multiplesOf32}/32</td></tr>
+        <tr><td>Número original de múltiplos de 1/32</td><td>${originalMultiplesOf32}/32</td></tr>
         <tr><td>Paridad</td><td>${parity}</td></tr>
-        
     </table>
 
     <table>
@@ -84,7 +78,4 @@ function calculate() {
         <tr><td>General</td><td>${general.toFixed(5)}</td></tr>
     </table>
 `;
-
-
 }
-

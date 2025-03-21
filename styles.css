@@ -1,7 +1,7 @@
 body {
     font-family: Arial, sans-serif;
     /* text-align: center; */
-    margin: 50px;
+    /* margin: 50px; */
     background-color: #f4f4f4;
 }
 
@@ -12,7 +12,7 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     display: inline-block;
     text-align: left;
-    width: 100%;
+    width: 95%;
 }
 
 .form-group {
@@ -49,16 +49,16 @@ button:hover {
 }
 
 p {
-    font-size: 20px;
+    /* font-size: 20px; */
     text-align: center;
 }
 
 table {
-    width: 50%;
+    /* width: 50%; */
     border-collapse: collapse;
     margin: 20px 0;
     font-family: Arial, sans-serif;
-    font-size: 16px;
+    /* font-size: 16px; */
     text-align: left;
 }
 
@@ -75,10 +75,10 @@ th {
 td:first-child {
     font-weight: bold;
     background-color: #e6e6e6;
-    width: 60%;
+    /* width: 60%; */
 }
 
 td:last-child {
     text-align: right;
-    width: 40%;
+    /* width: 40%; */
 }
