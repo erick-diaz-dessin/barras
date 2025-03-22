@@ -60,12 +60,12 @@ function calculate() {
     let barrasTable = `<table border="1" id="barrasTable">
         <tr>
             <th>Barra</th>
-            <th>Posición</th>
+            <th class="limites-columna">Posición</th>
             <th class="limites-columna">Inferior (1/32)</th>
             <th class="limites-columna">Superior (1/32)</th>
-            <th>Más cercano</th>
-            <th>Pulgadas</th>
-            <th>Repetido</th>
+            <th class="limites-columna">Más cercano</th>
+            <th class="limites-columna">Pulgadas</th>
+            <th>Ajustado</th>
         </tr>`;
 
     for (let i = 0; i < barras; i++) {
@@ -86,11 +86,11 @@ function calculate() {
 
         barrasTable += `<tr>
             <td>Barra ${i + 1}</td>
-            <td>${posiciones[i].toFixed(5)}</td>
+            <td class="limites-columna">${posiciones[i].toFixed(5)}</td>
             <td class="limites-columna">${redondeos.inferior.toFixed(5)}</td>
             <td class="limites-columna">${redondeos.superior.toFixed(5)}</td>
-            <td>${redondeos.masCercano.toFixed(5)}</td>
-            <td>${pulgadas}</td>
+            <td class="limites-columna">${redondeos.masCercano.toFixed(5)}</td>
+            <td class="limites-columna">${pulgadas}</td>
             <td>${repetido}</td>
         </tr>`;
     }
