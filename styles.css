@@ -48,11 +48,6 @@ button:hover {
     background: darkblue;
 }
 
-p {
-    /* font-size: 20px; */
-    text-align: center;
-}
-
 table {
     /* width: 50%; */
     border-collapse: collapse;
@@ -81,4 +76,13 @@ td:first-child {
 td:last-child {
     text-align: right;
     /* width: 40%; */
+}
+
+.limites-columna, .boton-ocultar{
+    display: none;
+}
+
+#boton-ocultar{
+    display: none;
+    margin-left: 0;
 }

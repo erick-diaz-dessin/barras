@@ -1,9 +1,12 @@
 function calculate() {
     let distancia = parseFloat(document.getElementById("num1").value);
-    let barras = parseFloat(document.getElementById("num2").value);
+    let barras = parseInt(document.getElementById("num2").value);
     let espesor = parseFloat(document.getElementById("num3").value);
+    let anguloInput = document.getElementById("num4").value.trim();
 
-    if (isNaN(distancia) || isNaN(barras) || isNaN(espesor)) {
+    let angulo = anguloInput === "" ? 0 : parseFloat(anguloInput);
+
+    if (isNaN(distancia) || isNaN(barras) || isNaN(espesor) || isNaN(angulo)) {
         document.getElementById("result").textContent = "Por favor, ingresa números válidos.";
         return;
     }
@@ -13,115 +16,106 @@ function calculate() {
         return;
     }
 
-    let rawResult = (distancia - (barras * espesor)) / (barras + 1);
-    let lower = Math.floor(rawResult * 32) / 32;
-    let upper = Math.ceil(rawResult * 32) / 32;
-    let closest = (rawResult - lower) < (upper - rawResult) ? lower : upper;
-    let finalValue = closest * (barras + 1) + (espesor * barras);
-
-    let difference = finalValue - distancia;
-    let formattedDifference = difference > 0 ? `-${Math.abs(difference).toFixed(5)}` : `${Math.abs(difference).toFixed(5)}`;
-
-    let originalMultiplesOf32 = Math.round(Math.abs(difference) * 32);
-    let parity = originalMultiplesOf32 % 2 === 0 ? "par" : "impar";
-
-    let enMedio = 0;
-    let primera, ultima;
-    let updatedMultiplesOf32 = originalMultiplesOf32;
-
-    if (barras % 2 === 0 && parity === "impar") {
-        enMedio = distancia - finalValue < 0 ? closest - (1 / 32) : closest + (1 / 32);
-        updatedMultiplesOf32 -= 1;
+    let espesorAjustado = espesor;
+    if (angulo !== 0) {
+        let radianes = angulo * (Math.PI / 180);
+        espesorAjustado = espesor / Math.sin(radianes);
     }
 
-    let adjustment = (updatedMultiplesOf32 / 2) / 32;
-    if (distancia - finalValue < 0) {
-        primera = closest - adjustment;
-        ultima = closest - adjustment;
-    } else {
-        primera = closest + adjustment;
-        ultima = closest + adjustment;
-    }
-
-    let general = closest;
+    let espacioReal = (distancia - (barras * espesorAjustado)) / (barras + 1);
     let posiciones = [];
-    posiciones.push(primera + (espesor / 2));
 
-    let barraEnMedioIndex = Math.ceil(barras / 2);
-
+    posiciones.push(espacioReal + (espesorAjustado / 2));
     for (let i = 1; i < barras; i++) {
-        if (i === barraEnMedioIndex && enMedio !== 0) {
-            posiciones.push(posiciones[i - 1] + enMedio + espesor);
-        } else {
-            posiciones.push(posiciones[i - 1] + general + espesor);
-        }
+        posiciones.push(posiciones[i - 1] + espacioReal + espesorAjustado);
     }
 
-    let finalPosition = posiciones[barras - 1] + (espesor / 2) + ultima;
+    let posicionFinal = posiciones[barras - 1] + espacioReal + (espesorAjustado / 2);
+    let diferencia = posicionFinal - distancia;
 
-    function formatoFraccionPulgadas(valor) {
+    function redondeoFraccion32(valor) {
+        let inferior = Math.floor(valor * 32) / 32;
+        let superior = Math.ceil(valor * 32) / 32;
+        let masCercano = (valor - inferior) < (superior - valor) ? inferior : superior;
+        return { inferior, superior, masCercano };
+    }
+
+    function convertirAPulgadas(valor) {
         let entero = Math.floor(valor);
         let fraccion = valor - entero;
         let fraccion32 = Math.round(fraccion * 32);
-    
-        if (fraccion32 === 0) {
-            return { entero, numerador: 0, denominador: 1 }; // Retorna número entero sin fracción
-        }
-    
+        if (fraccion32 === 0) return `${entero}"`;
+
         function mcd(a, b) {
             return b === 0 ? a : mcd(b, a % b);
         }
-    
+
         let divisor = mcd(fraccion32, 32);
         let numerador = fraccion32 / divisor;
         let denominador = 32 / divisor;
-    
-        return { entero, numerador, denominador };
+
+        return `${entero} ${numerador}/${denominador}`;
     }
-    
-    
-    let barrasTable = `<table border="1">
+
+    let barrasTable = `<table border="1" id="barrasTable">
         <tr>
             <th>Barra</th>
             <th>Posición</th>
+            <th class="limites-columna">Inferior (1/32)</th>
+            <th class="limites-columna">Superior (1/32)</th>
+            <th>Más cercano</th>
             <th>Pulgadas</th>
+            <th>Repetido</th>
         </tr>`;
 
-    for (let i = 0; i < posiciones.length; i++) {
-        let inch = formatoFraccionPulgadas(posiciones[i]);
-        if (inch.denominador === 32) inch = formatoFraccionPulgadas(posiciones[i] - 1/32)
+    for (let i = 0; i < barras; i++) {
+        let redondeos = redondeoFraccion32(posiciones[i]);
+        let pulgadas = convertirAPulgadas(redondeos.masCercano);
+
+        let partes;
+        let denominador;
+        let repetido;
+
+        if (pulgadas.includes("/")) {
+            partes = pulgadas.split(" ");
+            denominador = partes[1].split("/")[1];
+            repetido = denominador === "32" ? convertirAPulgadas(redondeos.masCercano - (1 / 32)) : pulgadas;
+        } else {
+            repetido = pulgadas;
+        }
+
         barrasTable += `<tr>
             <td>Barra ${i + 1}</td>
             <td>${posiciones[i].toFixed(5)}</td>
-            <td>${inch.entero} ${inch.numerador}/${inch.denominador}</td>
+            <td class="limites-columna">${redondeos.inferior.toFixed(5)}</td>
+            <td class="limites-columna">${redondeos.superior.toFixed(5)}</td>
+            <td>${redondeos.masCercano.toFixed(5)}</td>
+            <td>${pulgadas}</td>
+            <td>${repetido}</td>
         </tr>`;
     }
 
-    let finalInch = formatoFraccionPulgadas(finalPosition);
-    barrasTable += `<tr>
-        <td>Final</td>
-        <td>${finalPosition.toFixed(5)}</td>
-        <td>${finalInch.entero} ${finalInch.numerador}/${finalInch.denominador}</td>
-    </tr></table>`;
+    barrasTable += `</table>`;
 
     document.getElementById("result").innerHTML = `
+        <p>Espesor utilizado: ${espesorAjustado.toFixed(5)} pulgadas</p>
+        <p>Espacio real calculado: ${espacioReal.toFixed(5)}</p>
         ${barrasTable}
-        <table border="1">
-            <tr><td>Primera</td><td>${primera.toFixed(5)}</td></tr>
-            <tr><td>En medio</td><td>${enMedio.toFixed(5)}</td></tr>
-            <tr><td>Última</td><td>${ultima.toFixed(5)}</td></tr>
-            <tr><td>General</td><td>${general.toFixed(5)}</td></tr>
-        </table>
-        <table border="1">
-            <tr><td>Resultado exacto</td><td>${rawResult.toFixed(5)}</td></tr>
-            <tr><td>Múltiplo inferior (1/32)</td><td>${lower.toFixed(5)}</td></tr>
-            <tr><td>Múltiplo superior (1/32)</td><td>${upper.toFixed(5)}</td></tr>
-            <tr><td>Más cercano</td><td>${closest.toFixed(5)}</td></tr>
-            <tr><td>Resultado final con fórmula</td><td>${finalValue.toFixed(5)}</td></tr>
-            <tr><td>Diferencia con distancia ingresada</td><td>${formattedDifference}</td></tr>
-            <tr><td>Número original de múltiplos de 1/32</td><td>${originalMultiplesOf32}/32</td></tr>
-            <tr><td>Paridad</td><td>${parity}</td></tr>
-        </table>
+        <p><strong>Posición final:</strong> ${posicionFinal.toFixed(5)}</p>
+        <p><strong>Diferencia con el valor ingresado:</strong> ${diferencia.toFixed(5)}</p>
     `;
+
+    document.getElementById("boton-ocultar").style.display = "block";
+    
 }
 
+// Función para ocultar/mostrar las columnas de límites
+function toggleLimites() {
+    let columnas = document.querySelectorAll(".limites-columna");
+    
+    // Verificar si la primera columna está oculta (porque todas tienen el mismo estado)
+    let estadoActual = getComputedStyle(columnas[0]).display; 
+    let nuevoEstado = (estadoActual === "none") ? "table-cell" : "none";
+
+    columnas.forEach(col => col.style.display = nuevoEstado);
+}
