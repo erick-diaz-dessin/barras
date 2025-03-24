@@ -65,7 +65,7 @@ function calculate() {
             <th class="limites-columna">Superior (1/32)</th>
             <th class="limites-columna">Más cercano</th>
             <th class="limites-columna">Pulgadas</th>
-            <th>Ajustado</th>
+            <th>Pos. Aj.</th>
         </tr>`;
 
     for (let i = 0; i < barras; i++) {
@@ -84,6 +84,9 @@ function calculate() {
             repetido = pulgadas;
         }
 
+        // Aplicar subrayado si el ajuste fue necesario
+        let ajusteNecesario = repetido !== pulgadas ? `<u>${repetido}</u>` : repetido;
+
         barrasTable += `<tr>
             <td>Barra ${i + 1}</td>
             <td class="limites-columna">${posiciones[i].toFixed(5)}</td>
@@ -91,7 +94,7 @@ function calculate() {
             <td class="limites-columna">${redondeos.superior.toFixed(5)}</td>
             <td class="limites-columna">${redondeos.masCercano.toFixed(5)}</td>
             <td class="limites-columna">${pulgadas}</td>
-            <td>${repetido}</td>
+            <td>${ajusteNecesario}</td>
         </tr>`;
     }
 
@@ -106,7 +109,6 @@ function calculate() {
     `;
 
     document.getElementById("boton-ocultar").style.display = "block";
-    
 }
 
 // Función para ocultar/mostrar las columnas de límites
