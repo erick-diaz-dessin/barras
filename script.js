@@ -1,14 +1,20 @@
-let posicionesCen = [];
-let posicionesIzq = [];
-let posicionesDer = [];
+let posiciones = {
+    izquierda: [],
+    centro: [],
+    derecha: []
+}
+
+let resultados = {
+    izquierda: {},
+    centro: {},
+    derecha: {}
+}
 
 let distancia;
 let barras;
 let espesor;
 let anguloInput;
-
-let posicionFinal = [];
-let diferencia = [];
+let lado;
 
 function calculate() {
 
@@ -17,6 +23,7 @@ function calculate() {
     barras = Math.abs(parseInt(document.getElementById("num2").value));
     espesor = Math.abs(parseFloat(document.getElementById("num3").value));
     anguloInput = Math.abs(document.getElementById("num4").value.trim());
+    lado = document.querySelector('input[name="lado"]:checked');
     
     let angulo = anguloInput === "" ? 0 : parseFloat(anguloInput);
 
@@ -33,42 +40,8 @@ function calculate() {
 
     // calculo del espacio entre cada barra
     let espacioReal = (distancia - (barras * espesorAjustado)) / (barras + 1);
-    
-    // primeras barras
 
-    // posicion centro
-    posicionesCen[0] = ["Barra 1"]
-    posicionesCen[0].push(espacioReal + (espesorAjustado / 2));
-
-    // posicion izquierda
-    posicionesIzq[0] = ["Barra 1"]
-    posicionesIzq[0].push(espacioReal);
-
-    // posicion derecha
-    posicionesDer[0] = ["Barra 1"]
-    posicionesDer[0].push(espacioReal + espesorAjustado);
-
-    // barras intermedias
-    for (let i = 1; i < barras; i++) {
-        posicionesCen[i] = ["Barra " + (i + 1)]
-        posicionesCen[i].push(posicionesCen[i - 1][1] + espacioReal + espesorAjustado);
-        
-        posicionesIzq[i] = ["Barra " + (i + 1)]
-        posicionesIzq[i].push(posicionesIzq[i - 1][1] + espacioReal + espesorAjustado);
-
-        posicionesDer[i] = ["Barra " + (i + 1)]
-        posicionesDer[i].push(posicionesDer[i - 1][1] + espacioReal + espesorAjustado);
-    }
-
-    // barras finales
-    posicionFinal[0] = posicionesCen[barras - 1][1] + espacioReal + (espesorAjustado / 2);
-    posicionFinal.push(posicionesIzq[barras - 1][1] + espacioReal + espesorAjustado);
-    posicionFinal.push(posicionesDer[barras - 1][1] + espacioReal);
-
-    diferencia[0] = posicionFinal[0] - distancia;
-    diferencia.push(posicionFinal[1] - distancia);
-    diferencia.push(posicionFinal[2] - distancia);
-    //let diferenciaIzq = posicionFinalIzq - distancia;
+    fillTable(espacioReal, espesorAjustado);
 
     // Creacion de la tabla
     let barrasTable = `<table border="1" id="barrasTable">
@@ -83,37 +56,16 @@ function calculate() {
         </tr>`;
 
     for (let i = 0; i < barras; i++) {
-        let redondeos = redondeoFraccion32(posicionesCen[i][1]);
-        let pulgadas = convertirAPulgadas(redondeos.masCercano);
-
-        let partes;
-        let denominador;
-        let repetido;
-
-        if (pulgadas.includes("/")) {
-            partes = pulgadas.split(" ");
-            denominador = partes[1].split("/")[1];
-            repetido = denominador === "32" ? convertirAPulgadas(redondeos.masCercano - (1 / 32)) : pulgadas;
-        } else {
-            repetido = pulgadas;
-        }
-
-        posicionesCen[i].push(redondeos.inferior);
-        posicionesCen[i].push(redondeos.superior);
-        posicionesCen[i].push(redondeos.masCercano);
-        posicionesCen[i].push(pulgadas);
-        posicionesCen[i].push(repetido);
-
         // Aplicar subrayado si el ajuste fue necesario
-        let ajusteNecesario = repetido !== pulgadas ? `<u>${repetido}</u>` : repetido;
+        let ajusteNecesario = posiciones[lado.value][i][5] !== posiciones[lado.value][i][6] ? `<u>${posiciones[lado.value][i][6]}</u>` : posiciones[lado.value][i][6];
 
         barrasTable += `<tr>
-            <td>${posicionesCen[i][0]}</td>
-            <td class="limites-columna">${posicionesCen[i][1].toFixed(5)}</td>
-            <td class="limites-columna">${posicionesCen[i][2].toFixed(5)}</td>
-            <td class="limites-columna">${posicionesCen[i][3].toFixed(5)}</td>
-            <td class="limites-columna">${posicionesCen[i][4].toFixed(5)}</td>
-            <td class="limites-columna">${posicionesCen[i][5]}</td>
+            <td>${posiciones[lado.value][i][0]}</td>
+            <td class="limites-columna">${posiciones[lado.value][i][1].toFixed(3)}</td>
+            <td class="limites-columna">${posiciones[lado.value][i][2].toFixed(3)}</td>
+            <td class="limites-columna">${posiciones[lado.value][i][3].toFixed(3)}</td>
+            <td class="limites-columna">${posiciones[lado.value][i][4].toFixed(3)}</td>
+            <td class="limites-columna">${posiciones[lado.value][i][5]}</td>
             <td>${ajusteNecesario}</td>
         </tr>`;
 
@@ -121,58 +73,14 @@ function calculate() {
 
     barrasTable += `</table>`;
 
-    for (let i = 0; i < barras; i++) {
-        let redondeos = redondeoFraccion32(posicionesIzq[i][1]);
-        let pulgadas = convertirAPulgadas(redondeos.masCercano);
-
-        let partes;
-        let denominador;
-        let repetido;
-
-        if (pulgadas.includes("/")) {
-            partes = pulgadas.split(" ");
-            denominador = partes[1].split("/")[1];
-            repetido = denominador === "32" ? convertirAPulgadas(redondeos.masCercano - (1 / 32)) : pulgadas;
-        } else {
-            repetido = pulgadas;
-        }
-
-        posicionesIzq[i].push(redondeos.inferior);
-        posicionesIzq[i].push(redondeos.superior);
-        posicionesIzq[i].push(redondeos.masCercano);
-        posicionesIzq[i].push(pulgadas);
-        posicionesIzq[i].push(repetido);
-    }
-
-    for (let i = 0; i < barras; i++) {
-        let redondeos = redondeoFraccion32(posicionesDer[i][1]);
-        let pulgadas = convertirAPulgadas(redondeos.masCercano);
-
-        let partes;
-        let denominador;
-        let repetido;
-
-        if (pulgadas.includes("/")) {
-            partes = pulgadas.split(" ");
-            denominador = partes[1].split("/")[1];
-            repetido = denominador === "32" ? convertirAPulgadas(redondeos.masCercano - (1 / 32)) : pulgadas;
-        } else {
-            repetido = pulgadas;
-        }
-
-        posicionesDer[i].push(redondeos.inferior);
-        posicionesDer[i].push(redondeos.superior);
-        posicionesDer[i].push(redondeos.masCercano);
-        posicionesDer[i].push(pulgadas);
-        posicionesDer[i].push(repetido);
-    }
+    // updateTable();
 
     document.getElementById("result").innerHTML = `
-        <p>Espesor utilizado: ${espesorAjustado.toFixed(5)} pulgadas</p>
-        <p>Espacio real calculado: ${espacioReal.toFixed(5)}</p>
+        <p>Espesor utilizado: ${espesorAjustado.toFixed(3)} pulgadas</p>
+        <p>Espacio real calculado: ${espacioReal.toFixed(3)}</p>
         ${barrasTable}
-        <p><strong>Posición final:</strong> ${posicionFinal[0].toFixed(5)}</p>
-        <p><strong>Diferencia con el valor ingresado:</strong> ${diferencia[0].toFixed(5)}</p>
+        <p><strong>Posición final:</strong> ${resultados[lado.value].posicionFinal.toFixed(3)}</p>
+        <p><strong>Diferencia con el valor ingresado:</strong> ${resultados[lado.value].diferencia.toFixed(3)}</p>
     `;
 
     document.getElementById("boton-ocultar").style.display = "block";
@@ -206,6 +114,75 @@ function convertirAPulgadas(valor) {
     return `${entero} ${numerador}/${denominador}`;
 }
 
+function fillTable(espacio, espesor){
+
+    for (let cadaLado in posiciones){
+        // primeras barras
+        posiciones[cadaLado][0] = ["Barra 1"]
+        if(cadaLado === "izquierda") posiciones[cadaLado][0].push(espacio);
+        if(cadaLado === "centro") posiciones[cadaLado][0].push(espacio + (espesor / 2));
+        if(cadaLado === "derecha") posiciones[cadaLado][0].push(espacio + espesor);
+
+        // numBarras intermedias
+        for (let i = 1; i < barras; i++) {
+            posiciones[cadaLado][i] = ["Barra " + (i + 1)]
+            posiciones[cadaLado][i].push(posiciones[cadaLado][i - 1][1] + espacio + espesor);;
+        }
+
+        for (let i = 0; i < barras; i++) {
+            let redondeos = redondeoFraccion32(posiciones[cadaLado][i][1]);
+            let pulgadas = convertirAPulgadas(redondeos.masCercano);
+
+            let partes;
+            let denominador;
+            let repetido;
+
+            if (pulgadas.includes("/")) {
+                partes = pulgadas.split(" ");
+                denominador = partes[1].split("/")[1];
+                repetido = denominador === "32" ? convertirAPulgadas(redondeos.masCercano - (1 / 32)) : pulgadas;
+            } else {
+                repetido = pulgadas;
+            }
+
+            posiciones[cadaLado][i].push(redondeos.inferior);
+            posiciones[cadaLado][i].push(redondeos.superior);
+            posiciones[cadaLado][i].push(redondeos.masCercano);
+            posiciones[cadaLado][i].push(pulgadas);
+            posiciones[cadaLado][i].push(repetido);
+
+        }
+
+        if(cadaLado === "izquierda") resultados[cadaLado].posicionFinal = posiciones[cadaLado][barras - 1][1] + espacio + espesor;
+        if(cadaLado === "centro") resultados[cadaLado].posicionFinal = posiciones[cadaLado][barras - 1][1] + espacio + (espesor / 2);
+        if(cadaLado === "derecha") resultados[cadaLado].posicionFinal = posiciones[cadaLado][barras - 1][1] + espacio;
+        resultados[cadaLado].diferencia = resultados[cadaLado].posicionFinal - distancia;
+        
+    }
+    
+}
+
+function updateTable(){
+
+    let table = document.getElementById("barrasTable");
+    lado = document.querySelector('input[name="lado"]:checked');
+
+    for (let i = 0; i < barras; i++) {
+
+        // Aplicar subrayado si el ajuste fue necesario
+        let ajusteNecesario = posiciones[lado.value][i][5] !== posiciones[lado.value][i][6] ? `<u>${posiciones[lado.value][i][6]}</u>` : posiciones[lado.value][i][6];
+
+        table.rows[i + 1].cells[0].innerHTML = posiciones[lado.value][i][0];
+        table.rows[i + 1].cells[1].innerHTML = posiciones[lado.value][i][1].toFixed(3);
+        table.rows[i + 1].cells[2].innerHTML = posiciones[lado.value][i][2].toFixed(3);
+        table.rows[i + 1].cells[3].innerHTML = posiciones[lado.value][i][3].toFixed(3);
+        table.rows[i + 1].cells[4].innerHTML = posiciones[lado.value][i][4].toFixed(3);
+        table.rows[i + 1].cells[5].innerHTML = posiciones[lado.value][i][5];
+        table.rows[i + 1].cells[6].innerHTML = ajusteNecesario;
+
+    }
+}
+
 // Función para ocultar/mostrar las columnas de límites
 function toggleLimites() {
     let columnas = document.querySelectorAll(".limites-columna");
@@ -215,37 +192,4 @@ function toggleLimites() {
     let nuevoEstado = (estadoActual === "none") ? "table-cell" : "none";
 
     columnas.forEach(col => col.style.display = nuevoEstado);
-}
-
-function updateTable(boton){
-    let table = document.getElementById("barrasTable");
-    let datos;
-    switch(boton.dataset.lado){
-        case "center":
-            datos = posicionesCen;
-        break;
-
-        case "izquierda":
-            datos = posicionesIzq;
-        break;
-
-        case "derecha":
-            datos = posicionesDer;
-        break;
-    }
-
-    for (let i = 0; i < barras; i++) {
-
-        // Aplicar subrayado si el ajuste fue necesario
-        let ajusteNecesario = datos[i][5] !== datos[i][6] ? `<u>${datos[i][6]}</u>` : datos[i][6];
-
-        table.rows[i + 1].cells[0].innerHTML = datos[i][0];
-        table.rows[i + 1].cells[1].innerHTML = datos[i][1].toFixed(5);
-        table.rows[i + 1].cells[2].innerHTML = datos[i][2].toFixed(5);
-        table.rows[i + 1].cells[3].innerHTML = datos[i][3].toFixed(5);
-        table.rows[i + 1].cells[4].innerHTML = datos[i][4].toFixed(5);
-        table.rows[i + 1].cells[5].innerHTML = datos[i][5];
-        table.rows[i + 1].cells[6].innerHTML = ajusteNecesario;
-
-    }
 }

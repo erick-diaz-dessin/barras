@@ -82,3 +82,8 @@ td:last-child {
     display: flex;
     justify-content: space-around;
 }
+
+.lado-text {
+    display: inline-block;
+    margin-left: 5px;
+}
