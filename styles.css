@@ -83,7 +83,7 @@ td:last-child {
     justify-content: space-around;
 }
 
-.lado-text {
-    display: inline-block;
-    margin-left: 5px;
+.lado-img {
+    /* display: inline-block; */
+    margin-left: 30px;
 }
