@@ -148,13 +148,66 @@
           barrasGroup.remove(obj);
         }
 
-        const geometry = new THREE.BoxGeometry(espesor, 10, 1);
+        let anguloBarandal = Math.abs(document.getElementById("num4").value.trim());
+        let anguloBarandalRad = anguloBarandal * (Math.PI / 180) - Math.PI / 2;
+        let geometry;
 
-        // Barras del centro
+        let largoBarandal = centro[centro.length - 1] - centro[0] + espesor; ;
+        let geometryHorizontal;
+        let posHSup;
+
+
+        if (anguloBarandal !== 0) {
+          const shape = new THREE.Shape();
+          const base = espesor;
+          const altura = 10;
+          const dx = Math.tan(anguloBarandalRad) * altura;
+          posHSup = -dx + espesor / 2;
+
+          shape.moveTo(- base / 2, - altura / 2);
+          shape.lineTo(base / 2, - altura / 2);
+          shape.lineTo(base / 2 - dx, altura / 2);
+          shape.lineTo(-dx - base / 2, altura / 2);
+          shape.lineTo(-base / 2, - altura / 2);
+
+          const extrudeSettings = {
+            steps: 1,
+            depth: 1,
+            bevelEnabled: false,
+          };
+
+          geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+          geometry.translate(0, 0, -0.5);
+
+          const shapeH = new THREE.Shape();
+          const baseH = largoBarandal;
+          const alturaH = espesor;
+          const dxH = Math.tan(anguloBarandalRad) * espesor;
+
+          shapeH.moveTo(- (baseH + espesor)  / 2, - alturaH / 2);
+          shapeH.lineTo((baseH - espesor) / 2, - alturaH / 2);
+          shapeH.lineTo((baseH - espesor) / 2 - dxH, alturaH / 2);
+          shapeH.lineTo(-dxH - (baseH + espesor) / 2, alturaH / 2);
+          shapeH.lineTo(-(baseH + espesor) / 2, - alturaH / 2);
+
+          const extrudeSettingsH = {
+            steps: 1,
+            depth: 1,
+            bevelEnabled: false,
+          };
+
+          geometryHorizontal = new THREE.ExtrudeGeometry(shapeH, extrudeSettings);
+          geometryHorizontal.translate(0, 0, -0.5);
+        } else {
+          geometry = new THREE.BoxGeometry(espesor, 10, 1);
+          geometryHorizontal = new THREE.BoxGeometry(largoBarandal, espesor, 1); // larga y delgada
+
+        }
+
         centro.forEach(barra => {
           const posX = barra;
           const mesh = new THREE.Mesh(geometry, material);
-          mesh.position.set(posX, 0, 0);
+          mesh.position.set(posX, 0, 0); // sin rotación
           barrasGroup.add(mesh);
           const edges = new THREE.EdgesGeometry(geometry);
           const line = new THREE.LineSegments(edges, lineMaterial);
@@ -162,11 +215,13 @@
           barrasGroup.add(line);
         });
 
-        const largoBarandal = centro[centro.length - 1] - centro[0] + espesor; 
-        const geometryHorizontal = new THREE.BoxGeometry(largoBarandal, espesor, 1); // larga y delgada
-
+       
         const barraSuperior = new THREE.Mesh(geometryHorizontal, material);
-        barraSuperior.position.set(0, 5 + espesor / 2, 0); // altura = mitad de 10
+        if (anguloBarandal !== 0) {
+          barraSuperior.position.set(posHSup, 5 + espesor / 2, 0); // altura = mitad de 10
+        } else {
+          barraSuperior.position.set(0, 5 + espesor / 2, 0); // altura = mitad de 10
+        }
         barrasGroup.add(barraSuperior);
         // Líneas negras
         const edgesSup = new THREE.EdgesGeometry(geometryHorizontal);
