@@ -84,6 +84,11 @@ function calculate() {
     `;
 
     document.getElementById("boton-ocultar").style.display = "block";
+    updateCamera(distancia + 10);
+    let posBarrasCad = [- (espesorAjustado / 2) - distancia / 2, 
+        ...listaPosiciones(posiciones.centro), 
+        resultados.centro.posicionFinal + (espesorAjustado / 2) - distancia / 2];
+    iniciarThreeJS(posBarrasCad, espesorAjustado); // esto ya está disponible globalmente
 }
 
 // Esta funcion toma una fraccion de pulgada en decimal y devuelve el valor inferior y superior
@@ -101,7 +106,7 @@ function convertirAPulgadas(valor) {
     let entero = Math.floor(valor);
     let fraccion = valor - entero;
     let fraccion32 = Math.round(fraccion * 32);
-    if (fraccion32 === 0) return `${entero}"`;
+    if (fraccion32 === 0) return `${entero}`;
 
     function mcd(a, b) {
         return b === 0 ? a : mcd(b, a % b);
@@ -117,6 +122,7 @@ function convertirAPulgadas(valor) {
 function fillTable(espacio, espesor){
 
     for (let cadaLado in posiciones){
+        posiciones[cadaLado] = new Array(barras); // reserva el tamaño
         // primeras barras
         posiciones[cadaLado][0] = ["Barra 1"]
         if(cadaLado === "izquierda") posiciones[cadaLado][0].push(espacio);
@@ -192,4 +198,33 @@ function toggleLimites() {
     let nuevoEstado = (estadoActual === "none") ? "table-cell" : "none";
 
     columnas.forEach(col => col.style.display = nuevoEstado);
+}
+
+function listaPosiciones(centro) {
+  return centro.map(barra => {
+    const valor = barra[barra.length - 1]; // último elemento, tipo string
+    // Si ya es número, lo devolvemos directo
+    if (typeof valor === 'number') return valor - distancia / 2;
+
+    // Si es una fracción tipo "7 1/16" o "3 1/2"
+    const partes = valor.split(' ');
+    let pulgadas = 0;
+
+    if (partes.length === 2) {
+      pulgadas += parseInt(partes[0]); // parte entera
+      const [num, den] = partes[1].split('/').map(Number);
+      pulgadas += num / den;
+    } else if (partes.length === 1 && partes[0].includes('/')) {
+      const [num, den] = partes[0].split('/').map(Number);
+      pulgadas += num / den;
+    } else {
+      pulgadas = parseFloat(valor); // en caso de que sea tipo "3.5"
+    }
+
+    return pulgadas - distancia / 2;
+  });
+}
+
+function getPosiciones(lado) {
+  return posiciones[lado];
 }
