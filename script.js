@@ -15,6 +15,7 @@ let barras;
 let espesor;
 let anguloInput;
 let lado;
+let espesorAjustado
 
 function calculate() {
 
@@ -32,7 +33,7 @@ function calculate() {
         return;
     }
 
-    let espesorAjustado = espesor;
+    espesorAjustado = espesor;
     if (angulo !== 0) {
         let radianes = angulo * (Math.PI / 180);
         espesorAjustado = espesor / Math.sin(radianes);
@@ -187,6 +188,8 @@ function updateTable(){
         table.rows[i + 1].cells[6].innerHTML = ajusteNecesario;
 
     }
+    dibujarTexto();
+
 }
 
 // Función para ocultar/mostrar las columnas de límites
@@ -226,5 +229,5 @@ function listaPosiciones(centro) {
 }
 
 function getPosiciones(lado) {
-  return posiciones[lado];
+  return {text: posiciones[lado], pos: listaPosiciones(posiciones[lado])};
 }

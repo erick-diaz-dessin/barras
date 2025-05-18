@@ -48,7 +48,7 @@
         
     </div>
     <br>
-    <div id="visor-3d" style="width: 100%; height: 80vh; display: none;"></div>
+    <div id="visor-3d" style="width: 100%; height: 40vh; display: none;"></div>
     <script src="script.js"></script>
 
     <!-- este bloque muestra las barras 3D -->
@@ -97,6 +97,8 @@
       // Grupo para barras + líneas
       let barrasGroup = new THREE.Group();
       scene.add(barrasGroup);
+      let textoGroup = new THREE.Group();
+      scene.add(textoGroup); // o scene.add(textoGroup) si prefieres separarlos
 
       // Materiales globales para reutilizar
       const material = new THREE.MeshStandardMaterial({
@@ -181,77 +183,53 @@
         lineInf.position.copy(barraInferior.position);
         barrasGroup.add(lineInf);
 
-        const textPos = centro.slice(1,-1);
-        const posicionLado = getPosiciones("centro");
+        dibujarTexto();
+        
+      }
+
+      function dibujarTexto() {
+        textoGroup.clear(); // solo borra textos previos
+
+        const ladoSeleccionado = document.querySelector('input[name="lado"]:checked').value;
+        const textPos = getPosiciones(ladoSeleccionado).pos;
+        const posicionLado = getPosiciones(ladoSeleccionado).text;
+
         const loader = new FontLoader();
         loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
           for (let i = 0; i < textPos.length; i++) {
             const texto = posicionLado[i][posicionLado[i].length - 1].toString();
             const partes = texto.trim().split(' ');
-              const geometry = new TextGeometry(partes[0], {
-                font: font,
-                size: 0.5,
-                height: 0.1,
-              });
 
+            const geometry = new TextGeometry(partes[0], { font, size: 0.5, height: 0.1 });
             const material = new THREE.MeshStandardMaterial({ color: 0x333333 });
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(textPos[i] - 0.5, -8, 0.5);
+            textoGroup.add(mesh);
 
-            barrasGroup.add(mesh); // esto hará que el texto rote con el barandal
             if (partes.length > 1) {
-              const partesSub = partes[1].trim().split('/');
-              const geometryUp = new TextGeometry(partesSub[0], {
-                font: font,
-                size: 0.3,
-                height: 0.1,
-              });
+              const [num, den] = partes[1].trim().split('/');
+              const up = new THREE.Mesh(new TextGeometry(num, { font, size: 0.3, height: 0.1 }), material);
+              up.position.set(textPos[i] + 0.5 * (partes[0].length - 1), -7.5, 0.5);
+              textoGroup.add(up);
 
-              const material = new THREE.MeshStandardMaterial({ color: 0x333333 });
-              const meshUp = new THREE.Mesh(geometryUp, material);
-              meshUp.position.set(textPos[i] + 0.5 * (partes[0].length - 1), -7.5, 0.5);
+              const down = new THREE.Mesh(new TextGeometry(den, { font, size: 0.3, height: 0.1 }), material);
+              down.position.set(textPos[i] + 0.5 * (partes[0].length - 1), -8, 0.5);
+              textoGroup.add(down);
+            }
 
-              barrasGroup.add(meshUp); // esto hará que el texto rote con el barandal
-
-              const geometryDown = new TextGeometry(partesSub[1], {
-                font: font,
-                size: 0.3,
-                height: 0.1,
-              });
-
-              const meshDown = new THREE.Mesh(geometryDown, material);
-              meshDown.position.set(textPos[i] + 0.5 * (partes[0].length - 1), -8, 0.5);
-
-              barrasGroup.add(meshDown); // esto hará que el texto rote con el barandal
-            } 
-            // Puntos de la línea (vertical de Y = -5 a Y = 5)
-            const points = [];
-            points.push(new THREE.Vector3(textPos[i], -6.5, 0.5));
-            points.push(new THREE.Vector3(textPos[i], -4, 0.5));
-
-            // Geometría
-            const geometryLine = new THREE.BufferGeometry().setFromPoints(points);
-
-            // Material punteado
-            const materialLine = new THREE.LineDashedMaterial({
-              color: 0xff0000,   // rojo
-              dashSize: 0.5,     // longitud del trazo
-              gapSize: 0.2,      // espacio entre trazos
-              linewidth: 1       // nota: no todos los navegadores respetan esto
-            });
-
-            // Línea
-            const line = new THREE.Line(geometryLine, materialLine);
-            line.computeLineDistances(); // IMPORTANTE para que se vean los trazos
-
-            // Agrega a la escena o grupo
-            scene.add(line);
-          } 
-            
+            const line = new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(textPos[i], -6.5, 0.5),
+                new THREE.Vector3(textPos[i], -4, 0.5)
+              ]),
+              new THREE.LineDashedMaterial({ color: 0xff0000, dashSize: 0.5, gapSize: 0.2 })
+            );
+            line.computeLineDistances();
+            textoGroup.add(line);
+          }
         });
-
-        
       }
+
 
       // Animación (única vez)
       function animate() {
@@ -263,6 +241,7 @@
 
       window.iniciarThreeJS = iniciarThreeJS;
       window.updateCamera = updateCamera;
+      window.dibujarTexto = dibujarTexto;
 
     </script>
     <br>
