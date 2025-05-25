@@ -228,6 +228,10 @@ function listaPosiciones(centro) {
   });
 }
 
-function getPosiciones(lado) {
-  return {text: posiciones[lado], pos: listaPosiciones(posiciones[lado])};
+function getPosiciones() {
+  return Object.entries(posiciones).reduce((acc, [lado, datos]) => {
+    acc[lado] = { pos: listaPosiciones(datos), text: [...datos] };
+    return acc;
+  }, {});
 }
+
