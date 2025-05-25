@@ -50,6 +50,7 @@
     <br>
     <div id="visor-3d" style="width: 100%; height: 40vh; display: none;"></div>
     <button onclick="reversePositionText()">Invertir</button>
+    <button onclick="rotarBarras()">Rotar 180°</button>
     <script src="script.js"></script>
 
     <!-- este bloque muestra las barras 3D -->
@@ -140,6 +141,7 @@
       }
 
       let textPosition = {};
+      let barrasInvertidas = false;
 
       // Función para limpiar barras anteriores y crear nuevas
       function iniciarThreeJS(centro, espesor) {
@@ -308,6 +310,11 @@
         dibujarTexto();
       }
 
+      function rotarBarras() {
+        barrasInvertidas = !barrasInvertidas;
+        barrasGroup.rotation.y = barrasInvertidas ? Math.PI : 0;
+      }
+
       // Animación (única vez)
       function animate() {
         requestAnimationFrame(animate);
@@ -320,6 +327,7 @@
       window.updateCamera = updateCamera;
       window.dibujarTexto = dibujarTexto;
       window.reversePositionText = reversePositionText;
+      window.rotarBarras = rotarBarras;
 
     </script>
     <br>
