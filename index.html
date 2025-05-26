@@ -49,8 +49,8 @@
     </div>
     <br>
     <div id="visor-3d" style="width: 100%; height: 40vh; display: none;"></div>
-    <button onclick="reversePositionText()">Invertir</button>
-    <button onclick="rotarBarras()">Rotar 180°</button>
+    <button id="boton-invertir" onclick="reversePositionText()">Invertir</button>
+    <button id="boton-rotar" onclick="rotarBarras()">Rotar 180°</button>
     <script src="script.js"></script>
 
     <!-- este bloque muestra las barras 3D -->
@@ -314,18 +314,19 @@
       }
 
       function reversePositionText() {
-       
+        reversePosiciones();
         // Invertir los textos
         for (const lado in textPosition) {
           textPosition[lado].text.reverse();
         }
        
-        const temp = textPosition.izquierda.pos;
-        textPosition.izquierda.pos = textPosition.derecha.pos;
-        textPosition.derecha.pos = temp;
+        const temp = textPosition.izquierda.text;
+        textPosition.izquierda.text = textPosition.derecha.text;
+        textPosition.derecha.text = temp;
         
         zero = -zero;
-        dibujarTexto();
+        
+        updateTable();
       }        
 
       function rotarBarras() {

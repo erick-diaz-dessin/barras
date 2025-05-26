@@ -15,7 +15,7 @@ let barras;
 let espesor;
 let anguloInput;
 let lado;
-let espesorAjustado
+let espesorAjustado;
 
 function calculate() {
 
@@ -35,12 +35,12 @@ function calculate() {
 
     espesorAjustado = espesor;
     if (angulo !== 0) {
-        let radianes = angulo * (Math.PI / 180);
-        espesorAjustado = espesor / Math.sin(radianes);
+        espesorAjustado = espesor / Math.sin(angulo * (Math.PI / 180));
     }
 
     // calculo del espacio entre cada barra
     let espacioReal = (distancia - (barras * espesorAjustado)) / (barras + 1);
+    let distOrthBarras = angulo === 0 ? espacioReal : Math.sin(angulo * (Math.PI / 180)) * espacioReal;
 
     fillTable(espacioReal, espesorAjustado);
 
@@ -79,12 +79,15 @@ function calculate() {
     document.getElementById("result").innerHTML = `
         <p>Espesor utilizado: ${espesorAjustado.toFixed(3)} pulgadas</p>
         <p>Espacio real calculado: ${espacioReal.toFixed(3)}</p>
+        <p>Distancia Orth entre barras: ${distOrthBarras.toFixed(3)}</p>
         ${barrasTable}
         <p><strong>Posición final:</strong> ${resultados[lado.value].posicionFinal.toFixed(3)}</p>
         <p><strong>Diferencia con el valor ingresado:</strong> ${resultados[lado.value].diferencia.toFixed(3)}</p>
     `;
 
     document.getElementById("boton-ocultar").style.display = "block";
+    document.getElementById("boton-invertir").style.display = "inline-block";
+    document.getElementById("boton-rotar").style.display = "inline-block";
     updateCamera(distancia + 10);
     let posBarrasCad = [- (espesorAjustado / 2) - distancia / 2, 
         ...listaPosiciones(posiciones.centro), 
@@ -236,3 +239,8 @@ function getPosiciones() {
   }, {});
 }
 
+function reversePosiciones(){
+    const temp = posiciones.izquierda;
+    posiciones.izquierda = posiciones.derecha;
+    posiciones.derecha = temp;
+}
