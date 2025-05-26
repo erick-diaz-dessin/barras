@@ -138,10 +138,12 @@
         
         camera.updateProjectionMatrix();
         camera.lookAt(0, 0, 0);
+
       }
 
       let textPosition = {};
       let barrasInvertidas = false;
+      let zero = 0;
 
       // Función para limpiar barras anteriores y crear nuevas
       function iniciarThreeJS(centro, espesor) {
@@ -157,10 +159,11 @@
         let anguloBarandalRad = anguloBarandal * (Math.PI / 180) - Math.PI / 2;
         let geometry;
 
-        let largoBarandal = centro[centro.length - 1] - centro[0] + espesor; ;
+        let largoBarandal = centro[centro.length - 1] - centro[0] + espesor; 
         let geometryHorizontal;
         let posHSup;
 
+        zero = -largoBarandal / 2 + espesor;
 
         if (anguloBarandal !== 0) {
           const shape = new THREE.Shape();
@@ -288,27 +291,42 @@
             line.computeLineDistances();
             textoGroup.add(line);
           }
+
+          // Add zero (0) text
+          const geometry = new TextGeometry("0", { font, size: 0.5, height: 0.1 });
+          const material = new THREE.MeshStandardMaterial({ color: 0x333333 });
+          const mesh = new THREE.Mesh(geometry, material);
+          mesh.position.set(zero - 0.2, -8, 0.5);
+          textoGroup.add(mesh);
+
+          // Add zero (0) line
+          const line = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+              new THREE.Vector3(zero, -6.5, 0.5),
+              new THREE.Vector3(zero, -4, 0.5)
+            ]),
+            new THREE.LineDashedMaterial({ color: 0xff0000, dashSize: 0.5, gapSize: 0.2 })
+          );
+          line.computeLineDistances();
+          textoGroup.add(line);
+
         });
       }
 
       function reversePositionText() {
-        const ladoSeleccionado = document.querySelector('input[name="lado"]:checked').value;
-
+       
         // Invertir los textos
         for (const lado in textPosition) {
           textPosition[lado].text.reverse();
         }
-
-        if (ladoSeleccionado !== 'centro') {
-          // Si el lado seleccionado no es "centro", intercambiar izquierda y derecha
-          const temp = textPosition.izquierda.pos;
-          textPosition.izquierda.pos = textPosition.derecha.pos;
-          textPosition.derecha.pos = temp;
-          
-        }
-
+       
+        const temp = textPosition.izquierda.pos;
+        textPosition.izquierda.pos = textPosition.derecha.pos;
+        textPosition.derecha.pos = temp;
+        
+        zero = -zero;
         dibujarTexto();
-      }
+      }        
 
       function rotarBarras() {
         barrasInvertidas = !barrasInvertidas;

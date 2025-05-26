@@ -188,6 +188,7 @@ function updateTable(){
         table.rows[i + 1].cells[6].innerHTML = ajusteNecesario;
 
     }
+    
     dibujarTexto();
 
 }
