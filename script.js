@@ -29,7 +29,7 @@ function calculate() {
     let angulo = anguloInput === "" ? 0 : parseFloat(anguloInput);
 
     if (isNaN(distancia) || isNaN(barras) || isNaN(espesor) || isNaN(angulo)) {
-        document.getElementById("result").textContent = "Por favor, ingresa números válidos.";
+        document.getElementById("result").textContent = "Veuillez saisir des nombres valides.";
         return;
     }
 
@@ -42,18 +42,30 @@ function calculate() {
     let espacioReal = (distancia - (barras * espesorAjustado)) / (barras + 1);
     let distOrthBarras = angulo === 0 ? espacioReal : Math.sin(angulo * (Math.PI / 180)) * espacioReal;
 
+    // Conversión a mm
+    let distOrthBarrasMM = distOrthBarras * 25.4;
+
+    // Mostrar alerta si es demasiado grande, pero de forma asíncrona
+    if (distOrthBarrasMM > 100) {
+        setTimeout(() => {
+            alert("La distance entre les barres est trop grande !");
+        }, 0);
+    }
+
+    const color = distOrthBarrasMM > 100 ? "red" : "green";
+    
     fillTable(espacioReal, espesorAjustado);
 
     // Creacion de la tabla
     let barrasTable = `<table border="1" id="barrasTable">
         <tr>
-            <th>Barra</th>
-            <th class="limites-columna">Posición</th>
-            <th class="limites-columna">Inferior (1/32)</th>
-            <th class="limites-columna">Superior (1/32)</th>
-            <th class="limites-columna">Más cercano</th>
-            <th class="limites-columna">Pulgadas</th>
-            <th>Pos. Aj.</th>
+            <th>Barre</th>
+            <th class="limites-columna">Position</th>
+            <th class="limites-columna">Inférieur (1/32)</th>
+            <th class="limites-columna">Supérieur (1/32)</th>
+            <th class="limites-columna">Plus proche</th>
+            <th class="limites-columna">Pouces</th>
+            <th>Pos. Adj.</th>
         </tr>`;
 
     for (let i = 0; i < barras; i++) {
@@ -77,12 +89,15 @@ function calculate() {
     // updateTable();
 
     document.getElementById("result").innerHTML = `
-        <p>Espesor utilizado: ${espesorAjustado.toFixed(3)} pulgadas</p>
-        <p>Espacio real calculado: ${espacioReal.toFixed(3)}</p>
-        <p>Distancia Orth entre barras: ${distOrthBarras.toFixed(3)}</p>
+        <p>Épaisseur utilisée: ${espesorAjustado.toFixed(3)} pulgadas</p>
+        <p>Espacement réel calculé: ${espacioReal.toFixed(3)}</p>
+        <p style="color:${color}">
+            Distance orthogonale entre les barres: 
+            ${distOrthBarras.toFixed(3)} pouces (${distOrthBarrasMM.toFixed(1)} mm)
+        </p>
         ${barrasTable}
-        <p><strong>Posición final:</strong> ${resultados[lado.value].posicionFinal.toFixed(3)}</p>
-        <p><strong>Diferencia con el valor ingresado:</strong> ${resultados[lado.value].diferencia.toFixed(3)}</p>
+        <p><strong>Position finale:</strong> ${resultados[lado.value].posicionFinal.toFixed(3)}</p>
+        <p><strong>Différence avec la valeur saisie:</strong> ${resultados[lado.value].diferencia.toFixed(3)}</p>
     `;
 
     document.getElementById("boton-ocultar").style.display = "block";
@@ -128,14 +143,14 @@ function fillTable(espacio, espesor){
     for (let cadaLado in posiciones){
         posiciones[cadaLado] = new Array(barras); // reserva el tamaño
         // primeras barras
-        posiciones[cadaLado][0] = ["Barra 1"]
+        posiciones[cadaLado][0] = ["Barre 1"]
         if(cadaLado === "izquierda") posiciones[cadaLado][0].push(espacio);
         if(cadaLado === "centro") posiciones[cadaLado][0].push(espacio + (espesor / 2));
         if(cadaLado === "derecha") posiciones[cadaLado][0].push(espacio + espesor);
 
         // numBarras intermedias
         for (let i = 1; i < barras; i++) {
-            posiciones[cadaLado][i] = ["Barra " + (i + 1)]
+            posiciones[cadaLado][i] = ["Barre " + (i + 1)]
             posiciones[cadaLado][i].push(posiciones[cadaLado][i - 1][1] + espacio + espesor);;
         }
 
